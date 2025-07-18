@@ -1,173 +1,146 @@
 # Claude Commands
 
-A collection of powerful prompt templates and workflows for Claude Code to enhance productivity in software development tasks.
+Prompt templates for Claude Code to handle common software development tasks.
 
 ## Overview
 
-This repository contains carefully crafted prompts and methodologies that help Claude Code perform complex software engineering tasks more effectively. These templates leverage Claude Code's capabilities to search codebases, analyze problems, and implement solutions systematically.
+This repository contains prompts that help Claude Code work through software engineering tasks systematically. Each template provides a structured approach for specific development scenarios.
 
 ## Available Commands
 
 ### 1. Experiment-Driven Development (`01_experiment_driven_development.md`)
 
-A structured approach for implementing code changes with a learn-from-failure methodology. This template encourages experimental development with clear tracking of attempts and learnings.
+A learn-from-failure approach to implementing code changes. Tracks attempts and learnings through an iterative process.
 
-**Key Features:**
-- Goal-focused planning that emphasizes impact
-- Systematic learning from existing code
-- Structured experiment tracking with success/failure analysis
-- Iterative improvement process with balance tracking
-
-**When to Use:**
+**Use for:**
 - Complex features requiring exploration
-- Bug fixes where the root cause is unclear
-- Performance optimizations needing experimentation
-- Refactoring with uncertain outcomes
+- Bug fixes with unclear root causes
+- Performance optimizations
+- Experimental refactoring
+
+**Structure:**
+- Goal setting with impact focus
+- Code analysis and planning
+- Implementation tracking with success/failure logs
+- Iterative improvement cycles
 
 ### 2. Generate Codebase Context (`02_generate_codebase_context.md`)
 
-A simple prompt for generating comprehensive documentation files (like `llms.txt`) that provide complete context about a codebase.
+Creates comprehensive documentation files (like `llms.txt`) that provide complete context about a codebase.
 
-**Output Includes:**
-- High-level goals for each file
-- Function signatures with types and parameters
-- Concise function explanations
-- ASCII architecture diagrams
-- Code style guide insights
-- Data format documentation
+**Use for:**
+- Onboarding documentation
+- Codebase reference materials
+- Pre-refactoring analysis
+- AI assistant context
 
-**When to Use:**
-- Onboarding new team members or AI assistants
-- Creating codebase documentation
-- Preparing context for large refactoring
-- Generating reference materials
+**Output includes:**
+- File purposes and relationships
+- Function signatures with parameters
+- Architecture diagrams
+- Code conventions
+- Data formats
 
 ### 3. Analyze GitHub Issue (`03_analyze_github_issue.md`)
 
-A template for analyzing GitHub issues and creating comprehensive implementation plans without actually implementing the changes.
+Analyzes GitHub issues and creates implementation plans before coding begins.
+
+**Use for:**
+- New issue assessment
+- Implementation planning
+- Stakeholder alignment
+- Risk evaluation
 
 **Process:**
-1. Review GitHub issue details
-2. Examine relevant codebase sections
-3. Create descriptive feature branch
-4. Develop comprehensive implementation plan
-5. Request approval before proceeding
-
-**Plan Considerations:**
-- Required code changes and impacts
-- Test strategy and documentation needs
-- Performance and security implications
-- Backwards compatibility
-- Edge cases and best practices
-
-**When to Use:**
-- Starting work on new GitHub issues
-- Planning complex implementations
-- Getting stakeholder buy-in before coding
-- Ensuring thorough understanding before implementation
+1. Review issue details
+2. Examine codebase
+3. Create feature branch
+4. Develop implementation plan
+5. Request approval
 
 ### 4. Create GitHub Issue (`04_create_github_issue.md`)
 
-A sophisticated template for creating well-structured GitHub issues with customizable detail levels. Emphasizes research and best practices.
+Creates well-structured GitHub issues with varying detail levels based on complexity.
 
-**Detail Levels:**
-- **MINIMAL**: Quick issues for simple bugs/features
-- **MORE**: Standard issues with technical considerations
-- **A LOT**: Comprehensive issues for major features
+**Use for:**
+- Feature requests
+- Bug reports
+- Architecture proposals
+- Improvement suggestions
 
-**Key Features:**
+**Detail levels:**
+- **MINIMAL**: Simple bugs or clear features
+- **MORE**: Standard issues with technical details
+- **A LOT**: Major features or architectural changes
+
+**Features:**
 - Repository convention research
-- External best practices integration
-- Framework documentation lookup
+- Best practices integration
 - Stakeholder analysis
-- Cross-referencing and formatting best practices
-- AI-era development considerations
-
-**When to Use:**
-- Creating new feature requests
-- Documenting bugs with reproduction steps
-- Planning architectural changes
-- Proposing improvements or refactors
+- Proper formatting and cross-references
 
 ### 5. Resolve PR Comments (`05_resolve_pr_comments.md`)
 
-An advanced workflow for systematically resolving all comments, to-dos, and issues in pull requests. Includes parallel processing capabilities for faster resolution.
+Systematically addresses all PR feedback, comments, and requested changes.
 
-**Workflow Phases:**
-1. **Research & Analysis**: Comprehensive comment discovery
-2. **Planning**: Prioritized action items with TodoWrite tracking
-3. **Implementation**: Systematic resolution of all items
-4. **Verification**: Quality assurance and testing
+**Use for:**
+- Code review feedback
+- Multiple PR comments
+- Pre-merge cleanup
+- Review response management
 
-**Advanced Features:**
-- Parallel sub-agent coordination for independent changes
-- Intelligent comment classification by priority
-- Comprehensive GitHub API usage examples
-- Resolution tracking and verification
+**Workflow:**
+1. Research - Find all comments and feedback
+2. Planning - Prioritize and track with TodoWrite
+3. Implementation - Address each item
+4. Verification - Test and validate changes
 
-**When to Use:**
-- Addressing code review feedback
-- Resolving multiple PR comments efficiently
-- Cleaning up to-dos before merging
-- Responding to review requests systematically
+**Features:**
+- Parallel processing for independent changes
+- Comment priority classification
+- GitHub API command examples
+- Resolution tracking
 
 ## Usage
 
-Each command is designed to be used with Claude Code's slash command feature or copied directly into conversations. The templates use placeholder syntax like `#$ARGUMENTS` for dynamic content insertion.
-
-### Example Usage:
+Templates can be used as slash commands or copied directly:
 
 ```bash
-# Using as a slash command
-/research Create a feature for user authentication with OAuth
+# As slash command
+/research Create OAuth authentication feature
 
-# Or copy the template content directly and replace placeholders
+# Or copy template content and replace placeholders
 ```
+
+## Template Structure
+
+Most templates include:
+- Clear objectives
+- Step-by-step processes
+- Decision criteria
+- Output formats
+- Usage examples
 
 ## Best Practices
 
-1. **Choose the Right Template**: Select templates based on task complexity and requirements
-2. **Provide Clear Context**: Include relevant details when using templates
-3. **Follow the Phases**: Templates often have multiple phases - complete each thoroughly
-4. **Use TodoWrite**: Leverage Claude Code's task tracking for complex workflows
-5. **Verify Results**: Always run tests and linting after making changes
-
-## Benefits
-
-- **Consistency**: Standardized approaches to common tasks
-- **Efficiency**: Reduced time spent on planning and research
-- **Quality**: Built-in best practices and comprehensive considerations
-- **Learning**: Structured experimentation with documented outcomes
-- **Collaboration**: Clear communication through well-structured issues and PRs
+1. Select templates based on task type and complexity
+2. Provide complete context when using templates
+3. Follow all phases in multi-step workflows
+4. Use TodoWrite for complex task tracking
+5. Run tests and linting after changes
 
 ## Contributing
 
-Feel free to add new command templates or improve existing ones. Follow these guidelines:
-- Keep templates focused on specific use cases
-- Include clear documentation and examples
-- Consider both simple and complex scenarios
-- Add helpful thinking prompts and checklists
-- Test templates thoroughly before committing
+When adding templates:
+- Focus on specific use cases
+- Include clear documentation
+- Provide examples
+- Test thoroughly
+- Keep formatting consistent
 
-## Tips for Effective Use
+## Customization
 
-1. **Customize for Your Project**: Adapt templates to match your team's conventions
-2. **Combine Templates**: Use multiple templates together for complex workflows
-3. **Store Custom Versions**: Save project-specific variations in `.claude/commands/`
-4. **Share with Team**: Ensure consistent approaches across your development team
-5. **Iterate and Improve**: Refine templates based on real-world usage
-
-## Future Enhancements
-
-Potential areas for new command templates:
-- Database migration planning
-- API design and documentation
-- Security audit workflows
-- Performance optimization strategies
-- Deployment and rollback procedures
-- Code review templates
-- Technical debt tracking
-
----
-
-These Claude Commands help transform Claude Code from a coding assistant into a comprehensive software engineering partner, capable of handling complex workflows with consistency and intelligence.
+- Adapt templates to match team conventions
+- Save project-specific versions in `.claude/commands/`
+- Combine templates for complex workflows
+- Share modifications with your team
