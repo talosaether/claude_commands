@@ -162,15 +162,43 @@
 
 ---
 
+### `/ta:exit`
+**File:** `exit.md`
+**Purpose:** Session-end workflow that saves all work, preserves learnings, and prepares for next session
+
+**Use when:**
+- Ending a work session
+- Switching to a different project
+- Taking a break (save progress)
+- End of day (safe checkpoint)
+
+**Workflow:**
+1. **Phase 1:** Run `/ta:development-analyst` (automatic) - Preserve learnings
+2. **Phase 2:** Run `/ta:commit-and-push` (interactive) - Save work to git
+3. **Phase 3:** Run `/ta:clean-session` (optional) - Clean workspace
+4. **Phase 4:** Session summary - What was saved
+
+**Philosophy:**
+- Mirror of `/ta:onboard` - if onboard loads, exit saves
+- Completes compound engineering loop
+- Ensures nothing is lost between sessions
+
+**Example:**
+```
+/ta:exit
+```
+
+---
+
 ### `/ta:clean-session`
 **File:** `clean-session.md`
 **Purpose:** Reset workspace by removing untracked artifacts and reverting uncommitted changes
 
 **Use when:**
-- Ending a work session
-- Starting fresh on a new task
+- **Session start** (automatically via `/ta:onboard` Phase 0)
+- Mid-session task switching
 - Clearing experimental changes
-- Cleaning up after exploration
+- Removing debugging artifacts
 
 **Workflow:**
 1. Assess current workspace (untracked files, uncommitted changes)
