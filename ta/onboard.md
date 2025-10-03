@@ -21,6 +21,72 @@ The `claude_commands` repository (`~/.claude/commands/`) is our **interface for 
 
 ## Onboarding Workflow
 
+### Phase 0: Workspace Hygiene (Automatic with Countdown)
+
+**CRITICAL:** Before loading any context, ensure workspace is clean to prevent context injection.
+
+1. **Check for Artifacts**
+   ```bash
+   git status --short
+   ```
+   - Check for untracked files
+   - Check for uncommitted changes
+   - Determine if cleanup is needed
+
+2. **Countdown to Auto-Clean**
+   If ANY artifacts found (untracked files or uncommitted changes):
+
+   ```
+   ⚠️  WORKSPACE HYGIENE CHECK
+
+   Found leftover artifacts from previous session:
+   - X untracked files
+   - Y uncommitted changes
+
+   These artifacts are NOT in git and would pollute context during onboarding.
+
+   🔥 Auto-cleaning in 10 seconds...
+
+   Press any key to:
+   - [Enter] = Clean now
+   - [s] = Stash artifacts for later
+   - [c] = Cancel and keep artifacts (NOT RECOMMENDED)
+
+   Countdown: 10... 9... 8...
+   ```
+
+3. **Auto-Execute `/ta:clean-session`**
+   After 10 seconds OR user presses Enter:
+   - Automatically run `/ta:clean-session` with "clean all" option
+   - Remove all untracked files
+   - Revert all uncommitted changes
+   - Restore workspace to clean git state
+
+4. **Alternative Actions**
+   - **If user presses 's':** Run stash option from `/ta:clean-session`
+   - **If user presses 'c':** Skip cleanup (warn about context pollution)
+   - **If timeout expires:** Auto-clean (safe default)
+
+5. **Confirm Clean State**
+   ```bash
+   git status
+   ```
+   Should show "working tree clean" before proceeding to Phase 1.
+
+**Why this matters:**
+- No user discipline required (reliable, automatic)
+- Clean session is the priority
+- Advanced users can stash (10 second window)
+- Forgetful users get automatic protection
+- Context injection is prevented by default
+
+**Result after Phase 0:**
+```
+✅ Workspace clean - only git-tracked content
+✅ Safe to load context
+✅ Proceeding to onboarding...
+```
+
 ### Phase 1: Read Core Project Documentation
 
 Read these files in order to understand the project:
@@ -130,7 +196,7 @@ find . -type f -name "*.test.*" -o -name "*.spec.*" | head -10
 
 ### Phase 6: Synthesize and Present
 
-After reading all context, present a **concise onboarding summary**:
+After Phase 0 (hygiene) and reading all context, present a **concise onboarding summary**:
 
 ```
 ## Project: [Name]
@@ -246,6 +312,35 @@ Each session should leave the codebase AND the workflows better:
 User: "Get up to speed on the project"
 Assistant: Running /ta:onboard...
 
+**Phase 0: Workspace Hygiene**
+[Checks git status]
+
+⚠️  WORKSPACE HYGIENE CHECK
+
+Found leftover artifacts from previous session:
+- 3 untracked files (temp-notes.txt, debug.log, experiments/test.html)
+- 2 uncommitted changes (src/index.js, README.md)
+
+These artifacts are NOT in git and would pollute context during onboarding.
+
+🔥 Auto-cleaning in 10 seconds...
+
+Press any key to:
+- [Enter] = Clean now
+- [s] = Stash artifacts for later
+- [c] = Cancel and keep artifacts (NOT RECOMMENDED)
+
+Countdown: 10... 9... 8... 7... 6... 5... 4... 3... 2... 1...
+
+[Timeout - auto-cleaning]
+
+Running /ta:clean-session...
+✅ Removed 3 untracked files
+✅ Reverted 2 uncommitted changes
+✅ Workspace clean - only git-tracked content
+
+Proceeding to onboarding...
+
 **Phase 1: Reading Core Documentation**
 [Reads CLAUDE.md]
 ✓ Project: Yoke - Emby Media Client
@@ -317,6 +412,7 @@ Assistant: Running /ta:onboard...
 
 Onboarding is complete when you can answer:
 
+- ✅ **Phase 0:** Workspace is clean (no untracked files, no uncommitted changes)
 - ✅ What is this project and what does it do?
 - ✅ What architecture/patterns are used?
 - ✅ What was worked on recently?
@@ -340,6 +436,7 @@ Remember: This `/ta:onboard` command itself is part of the compounding system!
 
 ## Related Commands
 
+- `/ta:clean-session` - **Automatically executed in Phase 0** (can also run manually)
 - `/ta:development-analyst` - Run at end of session to capture learnings
 - `/ta:commit-and-push` - Use when ready to commit work
 - `/ta:test-driven-debug` - Use when fixing bugs systematically
@@ -347,12 +444,16 @@ Remember: This `/ta:onboard` command itself is part of the compounding system!
 ## Notes for Future Enhancement
 
 This command could be enhanced with:
+- ✅ **Phase 0 workspace hygiene with countdown** (IMPLEMENTED)
 - Automatic detection of project type (React vs Vue vs vanilla)
 - Smart prioritization of docs (read most important first)
 - Integration with GitHub issues for current work context
 - Automatic dependency vulnerability check
 - Project health metrics (test coverage, build time, etc.)
 - Comparison with previous sessions (what changed since last time)
+- Configurable countdown duration (default 10s, can be adjusted)
+- Visual progress bar for countdown
+- Sound/notification when auto-clean triggers
 
 ---
 
