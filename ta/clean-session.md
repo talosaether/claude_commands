@@ -1,12 +1,36 @@
-You are implementing a workspace cleanup workflow. This command resets the current working session by removing untracked artifacts and reverting uncommitted changes to prepare for the next task.
+You are implementing a session-start workspace hygiene workflow. This command runs **at the beginning of a new session** to guard against context injection by removing untracked artifacts and ensuring only official git-tracked content is loaded.
 
 ## Workflow Overview
 
-This workflow helps maintain a clean workspace by:
-- Removing untracked files and artifacts
+This workflow maintains workspace hygiene by:
+- Removing untracked files and artifacts from previous sessions
 - Reverting uncommitted changes
 - Restoring the workspace to a clean git state
+- Ensuring only **official, committed content** is available for `/ta:onboard`
 - Optionally stashing work in progress for later retrieval
+
+**Key principle:** Separation of concerns - this command is **defensive** (protect against stale context), not analytical. Run this **FIRST** at session start, then run `/ta:onboard` to load only git-tracked knowledge.
+
+## When to Run This Command
+
+**Primary use case:** Session start hygiene
+```
+New Claude session starts
+    ↓
+/ta:clean-session (FIRST - defensive hygiene)
+    ↓
+Clean slate - only git-tracked content
+    ↓
+/ta:onboard (SECOND - load official context)
+    ↓
+Begin work on clean foundation
+```
+
+**Also useful for:**
+- Switching to a different task mid-session
+- Clearing experimental changes
+- Removing debugging artifacts
+- Resetting after exploration
 
 ## Phase 1: Assessment
 
@@ -22,7 +46,7 @@ Before cleaning, understand what will be affected:
 
 2. **Ask User for Confirmation**
    Present the list of files that will be affected and ask:
-   - "I found X untracked files and Y modified files. Clean all? Or selective cleanup?"
+   - "Found leftover artifacts from previous session. These are not in git and would pollute context if loaded by /ta:onboard."
    - Options:
      - **Clean all** - Remove all untracked, revert all changes
      - **Selective** - User chooses what to keep
@@ -168,10 +192,10 @@ This workflow requires user input at these points:
 
 **NEVER:**
 - ❌ Clean without showing user what will be affected
-- ❌ Remove tracked files (only untracked)
-- ❌ Delete .git directory
-- ❌ Clean if there are unpushed commits (warn user)
+- ❌ Remove tracked files (only untracked and uncommitted)
+- ❌ Delete .git directory or any git internals
 - ❌ Remove .env files without explicit confirmation (may contain important config)
+- ❌ Run `/ta:development-analyst` automatically (separation of concerns)
 
 **ALWAYS:**
 - ✅ Show full list of files to be affected
@@ -210,18 +234,25 @@ If already clean:
 ## Example Session Flow
 
 ```
-User: "/ta:clean-session"
-Assistant: Checking workspace status...
+[New Claude Code session starts]
 
-Found:
+User: "/ta:clean-session"
+Assistant: Starting workspace hygiene check...
+
+Phase 1: Assessment
+Checking workspace status...
+
+Found leftover artifacts from previous session:
 - 3 untracked files:
-  - CLAUDE.md (untracked)
   - temp-notes.txt (untracked)
   - experiments/test.html (untracked)
+  - debug.log (untracked)
 
 - 2 modified files:
-  - ta/README.md (modified)
-  - src/index.js (modified)
+  - src/index.js (modified - uncommitted changes)
+  - README.md (modified - uncommitted changes)
+
+⚠️  These artifacts are not in git and would pollute context if loaded by /ta:onboard.
 
 How would you like to proceed?
 1. Clean all - Remove all untracked, revert all changes
@@ -232,35 +263,63 @@ How would you like to proceed?
 User: "Clean all"
 Assistant: Cleaning workspace...
 
+Phase 2: Cleanup
 [Runs git clean -fd]
-Removed: CLAUDE.md, temp-notes.txt, experiments/test.html
+Removed: temp-notes.txt, experiments/test.html, debug.log
 
 [Runs git restore .]
-Reverted: ta/README.md, src/index.js
+Reverted: src/index.js, README.md
 
 [Runs git restore --staged .]
 Unstaged: (no files were staged)
 
+Phase 3: Verification
 [Runs git status]
-✅ Workspace cleaned:
-- 3 files removed
-- 2 changes reverted
+✅ Workspace cleaned - hygiene check complete:
+- 3 untracked files removed
+- 2 uncommitted changes reverted
 - Working tree: clean
+- Only git-tracked content remains
 
-Ready for next session!
+Ready for onboarding! Run /ta:onboard to load official project context.
 ```
 
 ## Related Commands
 
-- `/ta:commit-and-push` - Commit work before cleaning (save progress)
-- `/ta:development-analyst` - Analyze session before cleanup (preserve learnings)
+- `/ta:onboard` - **Run AFTER this command** to load official git-tracked context
+- `/ta:development-analyst` - **Run separately** (manual step) when ready to commit learnings
+- `/ta:commit-and-push` - Commit work to make it official for future sessions
 - `git stash` - Built-in git command for temporary storage
+
+## Session Start Workflow
+
+**Recommended order for new sessions:**
+
+```
+1. /ta:clean-session
+   ↓ (Guards against context injection)
+   ↓ (Ensures only git-tracked content)
+   ↓
+2. /ta:onboard
+   ↓ (Loads official project knowledge)
+   ↓ (Reads CLAUDE.md, docs, git history)
+   ↓
+3. Begin work
+   ↓ (Clean foundation, no stale artifacts)
+```
+
+**Separation of Concerns:**
+- `/ta:clean-session` = **Defensive hygiene** (session start)
+- `/ta:development-analyst` = **Knowledge capture** (manual, when ready)
+- `/ta:onboard` = **Context loading** (official content only)
 
 ## Notes for Future Development
 
 This workflow can be enhanced with:
 - Automatic backup before destructive operations
-- Integration with /ta:development-analyst to auto-save session notes
 - Smart detection of important untracked files (docs, configs)
 - Cleanup profiles (aggressive, conservative, custom)
 - Dry-run mode to preview what would be removed
+- Timestamp tracking (detect very old untracked files vs recent)
+- Integration with .gitignore to respect intentional untracked files
+- Warning if there are unpushed commits (potential work loss)
