@@ -162,6 +162,42 @@
 
 ---
 
+### `/ta:clean-session`
+**File:** `clean-session.md`
+**Purpose:** Reset workspace by removing untracked artifacts and reverting uncommitted changes
+
+**Use when:**
+- Ending a work session
+- Starting fresh on a new task
+- Clearing experimental changes
+- Cleaning up after exploration
+
+**Workflow:**
+1. Assess current workspace (untracked files, uncommitted changes)
+2. Ask for confirmation (clean all, selective, stash, or cancel)
+3. Execute cleanup based on user preference
+4. Verify workspace is clean
+5. Optional: Clean build artifacts
+
+**Options:**
+- **Clean all** - Remove all untracked files, revert all changes
+- **Selective** - Choose specific files to remove/revert
+- **Stash** - Save work in progress for later retrieval
+- **Cancel** - Abort cleanup
+
+**Safety features:**
+- Shows full list before destructive actions
+- Warns about .env files and large files
+- Offers stash option to preserve work
+- Respects .gitignore patterns
+
+**Example:**
+```
+/ta:clean-session
+```
+
+---
+
 ## Command Template Structure
 
 When creating new `/ta:` commands, follow this structure:
