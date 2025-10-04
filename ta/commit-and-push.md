@@ -95,15 +95,48 @@ Analyze all changes and create a comprehensive commit message:
 
 ## Phase 3: Stage and Commit
 
-1. **Stage Relevant Files**
+1. **Verify .gitignore is Properly Configured**
+   Check that .gitignore exists and covers common patterns:
    ```bash
-   git add path/to/file1 path/to/file2
+   cat .gitignore
    ```
-   - Only add files related to this logical change
-   - Exclude generated files, logs, .env files
-   - Warn user if committing potential secrets
 
-2. **Create Commit with HEREDOC**
+   **Expected patterns (add if missing):**
+   - `node_modules/` - Dependencies
+   - `dist/` or `build/` - Build outputs
+   - `.env*` - Environment variables
+   - `*.log` - Log files
+   - `.DS_Store` - OS files
+   - Coverage/test output directories
+
+   **Important:** If .gitignore is missing or incomplete, warn user and suggest adding patterns.
+
+2. **Stage ALL Unignored Files**
+   ```bash
+   git add -A
+   ```
+
+   **Philosophy:** Trust .gitignore to define what should be committed.
+   - Adds all modified tracked files
+   - Adds all new untracked files (unless in .gitignore)
+   - Removes deleted files from staging
+   - Simple, predictable, no conditional logic
+
+   **This ensures:**
+   ✅ New files Claude creates are automatically included
+   ✅ No files are forgotten or left behind
+   ✅ .gitignore is the single source of truth
+   ✅ User doesn't have to manually specify files
+
+3. **Show What Was Staged**
+   ```bash
+   git status --short
+   ```
+   Confirm with user what will be committed:
+   - Green files (staged)
+   - Red files (not staged - should be in .gitignore)
+
+4. **Create Commit with HEREDOC**
    Always use HEREDOC for proper formatting:
    ```bash
    git commit -m "$(cat <<'EOF'
@@ -138,7 +171,7 @@ Analyze all changes and create a comprehensive commit message:
    )"
    ```
 
-3. **Verify Commit**
+5. **Verify Commit**
    ```bash
    git status
    git log -1 --stat
@@ -146,6 +179,7 @@ Analyze all changes and create a comprehensive commit message:
    - Confirm commit succeeded
    - Verify all expected files included
    - Check commit message formatting
+   - Working tree should be clean (no uncommitted changes)
 
 ## Phase 4: Optional Push & PR
 
@@ -224,16 +258,24 @@ This workflow requires user input at these points:
 - ❌ Force push to main/master
 - ❌ Amend commits from other developers
 - ❌ Skip pre-commit hooks (--no-verify)
-- ❌ Commit files containing secrets (.env, credentials.json, etc.)
 - ❌ Use generic commit messages ("fix", "updates", "wip")
 
 **ALWAYS:**
 - ✅ Run tests before committing
 - ✅ Review full diff before staging
+- ✅ **Verify .gitignore exists and is configured properly**
+- ✅ **Use `git add -A` to stage everything (trust .gitignore)**
+- ✅ Show `git status` after staging (confirm what will be committed)
 - ✅ Use HEREDOC for commit messages
 - ✅ Include detailed context in commits
 - ✅ Verify commit succeeded with git status
 - ✅ Check authorship before amending: `git log -1 --format='%an %ae'`
+
+**Philosophy Change (2025-10-04):**
+- OLD: Selective staging (git add file1 file2)
+- NEW: Trust .gitignore, stage everything (git add -A)
+- Reasoning: Simpler, more reliable, ensures nothing is forgotten
+- .gitignore is the single source of truth for what to exclude
 
 ## Example Session Flow
 
@@ -258,8 +300,17 @@ Implements multi-layered CSS approach...
 ```
 
 Phase 3: Staging and Commit
-[Stages files]
-git add src/views/ItemDetail.vue experiments/text-overflow-test.html docs/TEXT_OVERFLOW_PATTERNS.md
+[Checks .gitignore]
+✓ .gitignore exists and covers: node_modules/, dist/, .env*, *.log
+
+[Stages ALL files]
+git add -A
+
+[Shows what will be committed]
+git status --short
+M  src/views/ItemDetail.vue
+A  experiments/text-overflow-test.html
+A  docs/TEXT_OVERFLOW_PATTERNS.md
 
 [Creates commit with HEREDOC]
 

@@ -109,11 +109,13 @@ Ready for next session
 3. **Execute Commit Workflow**
    Based on user choice:
 
-   - **Option 1 (RECOMMENDED):** Run `/ta:commit-and-push` with all files
-   - **Option 2:** Run `/ta:commit-and-push` with tracked files only
+   - **Option 1 (RECOMMENDED):** Run `/ta:commit-and-push` (stages ALL with `git add -A`)
+   - **Option 2:** Run `/ta:commit-and-push` but only commit tracked changes (use `git add -u` instead of `git add -A`)
    - **Option 3:** Create timestamped stash, provide recovery instructions
    - **Option 4:** Show `git diff`, then ask again
    - **Option 5:** Warn user, create timestamped stash, proceed to Phase 3
+
+   **Note:** As of 2025-10-04, `/ta:commit-and-push` uses `git add -A` to stage everything (trusts .gitignore).
 
 4. **If User Chooses Stash (Option 3 or 5)**
    Create a well-documented stash:
