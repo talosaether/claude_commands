@@ -48,16 +48,52 @@ Before cleaning, understand what will be affected:
    Present the list of files that will be affected and ask:
    - "Found leftover artifacts from previous session. These are not in git and would pollute context if loaded by /ta:onboard."
    - Options:
-     - **Clean all** - Remove all untracked, revert all changes
-     - **Selective** - User chooses what to keep
-     - **Stash** - Save work in progress for later
-     - **Cancel** - Abort cleanup
+     - **[s] Stash (DEFAULT)** - Save work in progress for later (SAFE, reversible)
+     - **[c] Clean all** - Remove all untracked, revert all changes (DESTRUCTIVE)
+     - **[k] Selective** - User chooses what to remove/keep
+     - **[x] Cancel** - Keep everything as-is
+
+   **Auto-execute after 10 seconds: Stash** (safest option)
 
 ## Phase 2: Cleanup Strategy
 
+**IMPORTANT: Default to stash** - This is the safest, reversible option.
+
 Based on user preference, execute the appropriate cleanup:
 
-### Option A: Clean All (Fresh Start)
+### Option A: Stash Work in Progress (DEFAULT - SAFEST)
+
+**This should be the auto-execute option** after countdown, as it's non-destructive and fully reversible.
+
+1. **Stash All Changes**
+   ```bash
+   git stash push -u -m "Session cleanup - WIP from $(date +%Y-%m-%d-%H:%M)"
+   ```
+   - `-u` = include untracked files
+   - `-m` = add timestamped message
+   - Preserves ALL work for later retrieval
+
+2. **Verify Stash Created**
+   ```bash
+   git stash list
+   ```
+   - Show all stashes
+   - Confirm latest stash exists
+
+3. **Inform User**
+   ```
+   ✅ Work safely stashed:
+   - Stash: stash@{0} - "Session cleanup - WIP from 2025-10-04-14:30"
+   - Restore with: git stash pop
+   - View contents: git stash show -p stash@{0}
+   - Discard if not needed: git stash drop stash@{0}
+
+   Your work is safe and can be recovered anytime!
+   ```
+
+### Option B: Clean All (DESTRUCTIVE - Requires explicit confirmation)
+
+**Only use this if user explicitly chooses it.**
 
 1. **Remove All Untracked Files**
    ```bash
@@ -66,6 +102,7 @@ Based on user preference, execute the appropriate cleanup:
    - `-f` = force removal
    - `-d` = remove untracked directories too
    - Removes ALL untracked files and directories
+   - **PERMANENT - Cannot be undone!**
 
 2. **Revert All Uncommitted Changes**
    ```bash
@@ -73,6 +110,7 @@ Based on user preference, execute the appropriate cleanup:
    ```
    - Reverts all modified tracked files
    - Returns workspace to last commit state
+   - **PERMANENT - Cannot be undone!**
 
 3. **Unstage Everything**
    ```bash
@@ -81,7 +119,7 @@ Based on user preference, execute the appropriate cleanup:
    - Unstages any staged changes
    - Useful if files were added but not committed
 
-### Option B: Selective Cleanup
+### Option C: Selective Cleanup
 
 1. **Show Interactive List**
    ```bash
@@ -107,27 +145,9 @@ Based on user preference, execute the appropriate cleanup:
    - User specifies which changes to revert
    - Keep other modifications
 
-### Option C: Stash Work in Progress
+### Option D: Cancel (Keep Everything)
 
-1. **Stash All Changes**
-   ```bash
-   git stash push -u -m "Session cleanup - WIP from [date/description]"
-   ```
-   - `-u` = include untracked files
-   - `-m` = add descriptive message
-   - Preserves work for later retrieval
-
-2. **Verify Stash Created**
-   ```bash
-   git stash list
-   ```
-   - Show all stashes
-   - Confirm latest stash exists
-
-3. **Inform User**
-   - "Work stashed as: stash@{0}"
-   - "Restore later with: git stash pop"
-   - "Or discard with: git stash drop stash@{0}"
+**Action:** Exit without making any changes. User keeps all uncommitted and untracked files.
 
 ## Phase 3: Verification
 
@@ -255,31 +275,36 @@ Found leftover artifacts from previous session:
 ⚠️  These artifacts are not in git and would pollute context if loaded by /ta:onboard.
 
 How would you like to proceed?
-1. Clean all - Remove all untracked, revert all changes
-2. Selective - Choose what to remove/revert
-3. Stash - Save work in progress for later
-4. Cancel - Keep everything
+[s] Stash (DEFAULT) - Save for later (SAFE, reversible)
+[c] Clean all - Remove everything (DESTRUCTIVE)
+[k] Selective - Choose what to remove/keep
+[x] Cancel - Keep everything as-is
 
-User: "Clean all"
-Assistant: Cleaning workspace...
+Auto-stashing in 10 seconds... (press [s] or Enter to stash now)
 
-Phase 2: Cleanup
-[Runs git clean -fd]
-Removed: temp-notes.txt, experiments/test.html, debug.log
+[User presses Enter or timeout expires]
 
-[Runs git restore .]
-Reverted: src/index.js, README.md
+Phase 2: Stashing
+[Runs git stash push -u -m "Session cleanup - WIP from 2025-10-04-14:30"]
+Saved working directory and index state...
 
-[Runs git restore --staged .]
-Unstaged: (no files were staged)
+[Runs git stash list]
+✅ Work safely stashed:
+- Stash: stash@{0} - "Session cleanup - WIP from 2025-10-04-14:30"
+- 3 untracked files preserved
+- 2 modified files preserved
 
 Phase 3: Verification
 [Runs git status]
 ✅ Workspace cleaned - hygiene check complete:
-- 3 untracked files removed
-- 2 uncommitted changes reverted
 - Working tree: clean
+- Your work is safe in stash@{0}
 - Only git-tracked content remains
+
+To recover your work later:
+- Restore: git stash pop
+- View contents: git stash show -p stash@{0}
+- Discard: git stash drop stash@{0}
 
 Ready for onboarding! Run /ta:onboard to load official project context.
 ```

@@ -33,7 +33,7 @@ The `claude_commands` repository (`~/.claude/commands/`) is our **interface for 
    - Check for uncommitted changes
    - Determine if cleanup is needed
 
-2. **Countdown to Auto-Clean**
+2. **Countdown to Auto-Stash**
    If ANY artifacts found (untracked files or uncommitted changes):
 
    ```
@@ -45,27 +45,27 @@ The `claude_commands` repository (`~/.claude/commands/`) is our **interface for 
 
    These artifacts are NOT in git and would pollute context during onboarding.
 
-   🔥 Auto-cleaning in 10 seconds...
+   💾 Auto-stashing in 10 seconds...
 
    Press any key to:
-   - [Enter] = Clean now
-   - [s] = Stash artifacts for later
-   - [c] = Cancel and keep artifacts (NOT RECOMMENDED)
+   - [s] or [Enter] = Stash now (DEFAULT - SAFE)
+   - [c] = Clean all (DESTRUCTIVE - deletes permanently)
+   - [x] = Cancel and keep artifacts (NOT RECOMMENDED)
 
    Countdown: 10... 9... 8...
    ```
 
-3. **Auto-Execute `/ta:clean-session`**
-   After 10 seconds OR user presses Enter:
-   - Automatically run `/ta:clean-session` with "clean all" option
-   - Remove all untracked files
-   - Revert all uncommitted changes
-   - Restore workspace to clean git state
+3. **Auto-Execute Stash (SAFE DEFAULT)**
+   After 10 seconds OR user presses 's'/Enter:
+   - Automatically run `git stash push -u` with timestamped message
+   - Preserve all untracked files
+   - Preserve all uncommitted changes
+   - Workspace becomes clean, but work is recoverable
 
 4. **Alternative Actions**
-   - **If user presses 's':** Run stash option from `/ta:clean-session`
-   - **If user presses 'c':** Skip cleanup (warn about context pollution)
-   - **If timeout expires:** Auto-clean (safe default)
+   - **If user presses 'c':** Run destructive clean (git clean -fd && git restore .)
+   - **If user presses 'x':** Skip cleanup (warn about context pollution)
+   - **If timeout expires:** Auto-stash (SAFE default - work is preserved)
 
 5. **Confirm Clean State**
    ```bash
@@ -75,16 +75,22 @@ The `claude_commands` repository (`~/.claude/commands/`) is our **interface for 
 
 **Why this matters:**
 - No user discipline required (reliable, automatic)
-- Clean session is the priority
-- Advanced users can stash (10 second window)
-- Forgetful users get automatic protection
-- Context injection is prevented by default
+- **Work is preserved by default** (stash is safe and reversible)
+- Clean session prevents context injection
+- Destructive operations require explicit choice
+- Forgetful users get automatic protection WITH work preservation
 
 **Result after Phase 0:**
 ```
+✅ Work safely stashed in stash@{0}
 ✅ Workspace clean - only git-tracked content
 ✅ Safe to load context
 ✅ Proceeding to onboarding...
+
+To recover your work later:
+- Restore: git stash pop
+- View: git stash show -p stash@{0}
+- Discard: git stash drop stash@{0}
 ```
 
 ### Phase 1: Read Core Project Documentation
@@ -441,10 +447,48 @@ Remember: This `/ta:onboard` command itself is part of the compounding system!
 - `/ta:commit-and-push` - Use when ready to commit work
 - `/ta:test-driven-debug` - Use when fixing bugs systematically
 
+## Recovering Stashed Work
+
+If work was auto-stashed during onboarding, you can recover it easily:
+
+### View Stash Contents
+```bash
+git stash list  # See all stashes
+git stash show -p stash@{0}  # View diff of most recent stash
+```
+
+### Restore Stashed Work
+```bash
+# Apply and remove from stash
+git stash pop
+
+# Apply but keep in stash (safer)
+git stash apply stash@{0}
+```
+
+### Selective Recovery
+```bash
+# Restore only specific files
+git checkout stash@{0} -- path/to/file.js
+
+# Create a branch from stash
+git stash branch my-wip-branch stash@{0}
+```
+
+### Discard Stash (if not needed)
+```bash
+# Remove specific stash
+git stash drop stash@{0}
+
+# Clear all stashes (careful!)
+git stash clear
+```
+
 ## Notes for Future Enhancement
 
 This command could be enhanced with:
 - ✅ **Phase 0 workspace hygiene with countdown** (IMPLEMENTED)
+- ✅ **Stash-first default (SAFE)** (IMPLEMENTED 2025-10-04)
 - Automatic detection of project type (React vs Vue vs vanilla)
 - Smart prioritization of docs (read most important first)
 - Integration with GitHub issues for current work context
@@ -453,7 +497,8 @@ This command could be enhanced with:
 - Comparison with previous sessions (what changed since last time)
 - Configurable countdown duration (default 10s, can be adjusted)
 - Visual progress bar for countdown
-- Sound/notification when auto-clean triggers
+- Sound/notification when auto-stash triggers
+- Smart stash naming based on branch/recent commits
 
 ---
 
