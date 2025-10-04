@@ -85,13 +85,115 @@ The `claude_commands` repository (`~/.claude/commands/`) is our **interface for 
 ✅ Work safely stashed in stash@{0}
 ✅ Workspace clean - only git-tracked content
 ✅ Safe to load context
-✅ Proceeding to onboarding...
-
-To recover your work later:
-- Restore: git stash pop
-- View: git stash show -p stash@{0}
-- Discard: git stash drop stash@{0}
+✅ Proceeding to stash recovery check...
 ```
+
+---
+
+### Phase 0.5: Stash Recovery (NEW - Safety Net)
+
+**CRITICAL:** Check for stashed work from previous sessions before loading context.
+
+This phase catches work that was:
+- Stashed during `/ta:exit` (user chose not to commit)
+- Auto-stashed during previous `/ta:onboard` (user forgot to run `/ta:exit`)
+- Manually stashed by user
+
+1. **Check for Existing Stashes**
+   ```bash
+   git stash list
+   ```
+   - Count total stashes
+   - Check timestamps (recent vs old)
+   - Determine if recovery is needed
+
+2. **If Stashes Found: Offer Recovery**
+   ```
+   💾 FOUND STASHED WORK FROM PREVIOUS SESSION(S)
+
+   You have X stash(es) that may contain important work:
+
+   stash@{0}: "Exit without commit - WIP from 2025-10-04-15:30"
+              Created: 2 hours ago
+              Contains: 5 files (AlbumTracks.vue, ArtistAlbums.vue, etc.)
+
+   stash@{1}: "Session cleanup - WIP from 2025-10-03-18:21"
+              Created: 1 day ago
+              Contains: 3 files
+
+   ⚠️  This may be important work you forgot to commit!
+
+   How would you like to proceed?
+   [1] Restore latest stash (git stash pop)
+   [2] View latest stash contents first (git stash show -p)
+   [3] Keep in stash for now (skip recovery)
+   [4] Discard latest stash (git stash drop)
+   [5] Show all stashes and choose
+
+   Choice:
+   ```
+
+3. **Execute User Choice**
+   Based on selection:
+
+   - **Option 1:** `git stash pop` → Restore work to workspace
+   - **Option 2:** Show contents, then ask again
+   - **Option 3:** Continue to Phase 1 (stash remains)
+   - **Option 4:** `git stash drop stash@{0}` → Permanently delete
+   - **Option 5:** Show detailed list, let user specify which stash
+
+4. **After Recovery**
+   If work was restored (Option 1):
+   ```
+   ✅ Work restored from stash:
+   - 5 files restored to workspace
+   - Previous stash@{0} removed
+   - Working tree now has uncommitted changes
+
+   IMPORTANT: Remember to commit this work!
+   - Run /ta:commit-and-push when ready
+   - Or run /ta:exit to save properly at end of session
+
+   Proceeding to onboarding with restored work...
+   ```
+
+   If work was kept in stash (Option 3):
+   ```
+   ℹ️  Stash preserved for later:
+   - You can restore anytime with: git stash pop
+   - Or view with: git stash show -p stash@{0}
+
+   Proceeding to onboarding...
+   ```
+
+5. **Special Case: Multiple Old Stashes**
+   If stashes are older than 7 days:
+   ```
+   ⚠️  Found old stashes (>7 days):
+   - stash@{2}: 15 days old
+   - stash@{3}: 30 days old
+
+   These may be obsolete. Review and clean up later with:
+   - git stash list (to see all)
+   - git stash drop stash@{N} (to remove specific stash)
+   - git stash clear (to remove all - CAREFUL!)
+   ```
+
+**Why Phase 0.5 (after workspace clean, before context load):**
+- Workspace is already clean (Phase 0 completed)
+- User can restore work before loading context
+- Prevents confusion (deal with past before loading present)
+- Clear separation: hygiene → recovery → onboarding
+
+**Result after Phase 0.5:**
+```
+✅ Stash recovery complete
+✅ No hidden work remaining (or intentionally kept in stash)
+✅ Ready to load project context
+✅ Proceeding to Phase 1...
+```
+
+---
 
 ### Phase 1: Read Core Project Documentation
 
@@ -484,11 +586,66 @@ git stash drop stash@{0}
 git stash clear
 ```
 
+## Session Lifecycle with Stash Recovery
+
+**Complete flow (defense in depth):**
+
+```
+END OF PREVIOUS SESSION
+    │
+    ├─ Option A: /ta:exit run properly
+    │      └─> User commits work (BEST)
+    │      └─> OR user stashes with warning
+    │
+    ├─ Option B: User forgets /ta:exit
+    │      └─> Session ends, files uncommitted
+    │
+    └─────────────────────┘
+              │
+       [Time passes]
+              │
+              ↓
+START OF NEW SESSION
+    │
+    ↓
+/ta:onboard Phase 0: Workspace Hygiene
+    │ ├─> Find uncommitted files from forgotten exit
+    │ └─> Auto-stash with timestamp (10s countdown)
+    │
+    ↓
+/ta:onboard Phase 0.5: Stash Recovery ← NEW SAFETY NET
+    │ ├─> Detect stash from previous session
+    │ ├─> Show contents and age
+    │ └─> Offer: Restore / View / Keep / Discard
+    │
+    ↓
+User choice:
+    │
+    ├─ Restore → Work back in workspace → Reminder to commit
+    ├─ View → See contents → Choose again
+    ├─ Keep → Work stays in stash (safe but hidden)
+    └─ Discard → Work lost (user confirms)
+    │
+    ↓
+/ta:onboard Phase 1-6: Load Context
+    │
+    ↓
+Work on project
+    │
+    ↓
+/ta:exit Phase 2: Commit with strong encouragement
+    │
+    └─> Cycle repeats (defense in depth)
+```
+
+**Result:** Multiple layers of protection prevent data loss while preserving user flexibility.
+
 ## Notes for Future Enhancement
 
 This command could be enhanced with:
 - ✅ **Phase 0 workspace hygiene with countdown** (IMPLEMENTED)
 - ✅ **Stash-first default (SAFE)** (IMPLEMENTED 2025-10-04)
+- ✅ **Phase 0.5 stash recovery (SAFETY NET)** (IMPLEMENTED 2025-10-04)
 - Automatic detection of project type (React vs Vue vs vanilla)
 - Smart prioritization of docs (read most important first)
 - Integration with GitHub issues for current work context
@@ -499,6 +656,8 @@ This command could be enhanced with:
 - Visual progress bar for countdown
 - Sound/notification when auto-stash triggers
 - Smart stash naming based on branch/recent commits
+- Stash age warnings (alert if stash is very old)
+- Integration with /ta:exit (remind user if they forgot to exit properly)
 
 ---
 

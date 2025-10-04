@@ -67,7 +67,7 @@ Ready for next session
 - Ensures learnings aren't lost even if commit fails
 - CLAUDE.md becomes part of the commit
 
-### Phase 2: Commit Work (Interactive)
+### Phase 2: Commit Work (STRONGLY RECOMMENDED)
 
 **Save all uncommitted work to git.**
 
@@ -79,19 +79,29 @@ Ready for next session
    - Count untracked files
    - Determine if commit is needed
 
-2. **Offer Commit Options**
+2. **Offer Commit Options with Clear Warning**
    If uncommitted work exists:
 
    ```
-   📦 Uncommitted work detected:
+   ⚠️  UNCOMMITTED WORK DETECTED - ACTION REQUIRED
+
+   📦 Your session has uncommitted work:
    - X modified files
    - Y untracked files
 
+   ⚠️  IMPORTANT: Uncommitted work will be stashed and hidden on next /ta:onboard.
+
+   This means:
+   ✓ If you commit: Work is saved permanently in git (SAFE)
+   ⚠️  If you skip: Work is stashed with timestamp (RECOVERABLE but hidden)
+   ❌ If you forget /ta:exit: Work may be lost on next session
+
    How would you like to proceed?
-   1. Commit all work (runs /ta:commit-and-push)
-   2. Commit only tracked changes (ignore untracked)
-   3. Skip commit (work stays uncommitted)
-   4. Review changes first
+   [1] Commit all work (RECOMMENDED - work is permanently saved)
+   [2] Commit only tracked changes (ignore untracked files)
+   [3] Stash for later (work is recoverable via git stash pop)
+   [4] Review changes first (show git diff)
+   [5] Skip (NOT RECOMMENDED - work will be hidden)
 
    Choice:
    ```
@@ -99,24 +109,51 @@ Ready for next session
 3. **Execute Commit Workflow**
    Based on user choice:
 
-   - **Option 1:** Run `/ta:commit-and-push` with all files
+   - **Option 1 (RECOMMENDED):** Run `/ta:commit-and-push` with all files
    - **Option 2:** Run `/ta:commit-and-push` with tracked files only
-   - **Option 3:** Skip to Phase 3
+   - **Option 3:** Create timestamped stash, provide recovery instructions
    - **Option 4:** Show `git diff`, then ask again
+   - **Option 5:** Warn user, create timestamped stash, proceed to Phase 3
 
-4. **Confirm Commit**
+4. **If User Chooses Stash (Option 3 or 5)**
+   Create a well-documented stash:
+   ```bash
+   git stash push -u -m "Exit without commit - WIP from $(date +%Y-%m-%d-%H:%M) - [brief description]"
+   ```
+
+   Then inform user:
+   ```
+   ⚠️  Work stashed (not committed):
+   - Stash: stash@{0} - "Exit without commit - WIP from 2025-10-04-15:30"
+   - Contains: X modified files, Y untracked files
+
+   To recover this work in your next session:
+   1. Run: git stash list (to see all stashes)
+   2. Run: git stash show -p stash@{0} (to view contents)
+   3. Run: git stash pop (to restore work)
+
+   ⚠️  OR: Next /ta:onboard will detect this stash and offer to restore it.
+
+   BETTER APPROACH: Consider committing instead! Run /ta:commit-and-push manually.
+   ```
+
+5. **Confirm Commit**
    After commit (if chosen):
    ```
    ✅ Work committed successfully
    - Commit: abc1234
+   - Message: "feat: Add feature X"
    - Files: X modified, Y added
    - Pushed to remote: yes/no
+
+   Your work is safely preserved in git!
    ```
 
-**Why interactive:**
-- User may have experimental files to exclude
-- May want to review before committing
-- Flexibility for different workflows
+**Why strongly recommended but not mandatory:**
+- User may be experimenting and want to iterate
+- Some work may be intentionally temporary
+- Stash provides safety net with clear recovery path
+- Next /ta:onboard will offer stash recovery (defense in depth)
 
 ### Phase 3: Workspace Cleanup (Optional)
 
@@ -383,9 +420,63 @@ Knowledge compounds!
 
 **Result:** Each session builds on the last, nothing is lost, context grows exponentially.
 
+## Defense in Depth: Hybrid Commit Workflow
+
+**This command works with `/ta:onboard` to prevent data loss:**
+
+### Layer 1: `/ta:exit` (Strong Encouragement)
+- Phase 2 clearly warns about uncommitted work
+- Shows consequences of skipping commit
+- Provides easy commit path with `/ta:commit-and-push`
+- If user skips: Creates timestamped stash with recovery instructions
+
+### Layer 2: `/ta:onboard` (Safety Net)
+- Phase 0.5 detects stashes from previous sessions
+- Shows stash contents and age
+- Offers easy recovery: Restore / View / Keep / Discard
+- Reminds user to commit recovered work
+
+**Result:** User can skip commit at exit, but work is never lost. Next session offers recovery.
+
+**Philosophy:**
+- Education > Enforcement (teach proper workflow)
+- Flexibility > Rigidity (allow iteration and exploration)
+- Safety > Convenience (multiple protection layers)
+- Recovery > Restriction (make mistakes recoverable)
+
+**Proper Workflow:**
+```
+Work on project
+    ↓
+/ta:exit
+    ↓ Phase 1: Session analysis → CLAUDE.md
+    ↓ Phase 2: Commit work → git (CHOOSE OPTION 1)
+    ↓ Phase 3: Clean workspace (optional)
+    ↓
+Session ends cleanly
+    ↓
+Next /ta:onboard: No stashes to recover (clean start)
+```
+
+**Recovery Workflow (if user forgets):**
+```
+Work on project
+    ↓
+[User forgets /ta:exit, just closes window]
+    ↓
+Files left uncommitted
+    ↓
+Next session: /ta:onboard
+    ↓ Phase 0: Auto-stash uncommitted files
+    ↓ Phase 0.5: Detect stash, offer recovery
+    ↓
+User restores work → Commits properly this time
+```
+
 ## Notes for Future Development
 
 This workflow can be enhanced with:
+- ✅ **Hybrid commit workflow with /ta:onboard** (IMPLEMENTED 2025-10-04)
 - Automatic detection of forgotten TODOs in code
 - Reminder to update documentation if code changed
 - Check for uncommitted secrets before commit
@@ -396,6 +487,7 @@ This workflow can be enhanced with:
 - Automatic branch cleanup (merged branches)
 - Reminder to run tests before exit
 - Check for dependency vulnerabilities before commit
+- Warning if user has run `/ta:exit` multiple times without /ta:onboard
 
 ---
 
